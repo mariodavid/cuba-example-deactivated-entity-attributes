@@ -34,13 +34,12 @@
         <form id="fieldGroup" dataContainer="petDc">
             <column width="250px">
                 <textField property="name"/>
-                <textField property="identificationNumber"/>
+                <textField property="identificationNumber" id="identificationNumberField" editable="false"/>
                 <dateField property="birthDate"/>
                 <lookupPickerField property="type" optionsContainer="typesDc"/>
                 <lookupPickerField property="owner" optionsContainer="ownersDc"/>
             </column>
         </form>
-
 
         <hbox id="editActions" spacing="true">
             <button action="windowCommitAndClose"/>

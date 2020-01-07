@@ -18,7 +18,7 @@
     <layout expand="editActions" spacing="true">
         <form id="fieldGroup" dataContainer="petTypeCt">
             <column width="250px">
-                <textField property="name"/>
+                <textField property="name" id="nameField"/>
             </column>
         </form>
 

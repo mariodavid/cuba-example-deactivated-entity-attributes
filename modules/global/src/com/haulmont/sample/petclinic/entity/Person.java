@@ -3,6 +3,8 @@ package com.haulmont.sample.petclinic.entity;
 import com.haulmont.chile.core.annotations.MetaProperty;
 import com.haulmont.chile.core.annotations.NamePattern;
 import com.haulmont.cuba.core.entity.StandardEntity;
+import com.haulmont.sample.petclinic.entity.vet.DeactivateOnEdit;
+
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Transient;
@@ -13,6 +15,7 @@ import javax.validation.constraints.NotNull;
 public class Person extends StandardEntity {
     private static final long serialVersionUID = -2777766826323269523L;
 
+    @DeactivateOnEdit
     @NotNull
     @Column(name = "FIRST_NAME", nullable = false)
     protected String firstName;

@@ -1,40 +1,108 @@
-# CUBA Petclinic
+# CUBA Example Deactivated Entity Attributes
 
-<p align="center">
-  <img src="https://github.com/cuba-platform/cuba-petclinic/blob/master/modules/web/themes/hover/branding/petclinic_logo_full.png"/>
-</p>
+This CUBA example shows how to deactivate entity attributes once an entity was created.
 
+NOTE: this example only works on the UI layer. In case this constraint has to be fulfilled throughout 
+all parts of the application (like REST API, Entity Inspector etc.) a Bean Validation / EntityChangedEvent based approach 
+has to be used.
 
-CUBA Petclinic is a CUBA platform example application dealing with the domain of a petclinic. It is based on the commonly known [Spring Petclinic](https://github.com/spring-projects/spring-petclinic) example.
-
-The CUBA Petclinic application deals with the domain of a Pet clinic and the associated business workflows to manage a pet clinic.
-
-## Online Demo
-
-You can find the CUBA Petclinic as an online hosted example here: [CUBA Petclinic Online Demo](https://demo4.cuba-platform.com/petclinic)
+### Running Example
+![overview](img/overview.gif)
 
 
-## Application overview
+### Variant 1: Manually
 
-<a href="https://raw.githubusercontent.com/cuba-platform/cuba-petclinic/master/img/cuba-petclinic-overview.gif"><img src="https://raw.githubusercontent.com/cuba-platform/cuba-petclinic/master/img/login-screen.png"/></a>
+The first option is to manually activate a particular entity attribute in case the entity 
+is new.
 
+This can be achieved by making the field in the XML Screen descriptor non-editable:
+```xml
+<textField 
+       property="identificationNumber" 
+       id="identificationNumberField" 
+       editable="false" />
+``` 
 
-## Domain model
+In the screen controller the entity attribute will be activated in case it is a new entity instance:
 
+```java
 
-![CUBA Petclinic Domain model](https://github.com/cuba-platform/cuba-petclinic/blob/master/img/domain-model.png)
+@UiController("petclinic_Pet.edit")
+@UiDescriptor("pet-edit.xml")
+@EditedEntityContainer("petDc")
+@LoadDataBeforeShow
+public class PetEdit extends StandardEditor<Pet> {
 
+    @Inject
+    protected TextField<String> identificationNumberField;
 
-## starting the application
-
-#### start database
+    @Subscribe
+    protected void onInitEntity(InitEntityEvent<Pet> event) {
+        identificationNumberField.setEditable(true);
+    }
+}
 ```
-./start-db.sh
+
+This variant works in case the amount of fields is not that big. In case there are multiple
+entity attributes or the same logic has to be mirrored across different entities the Variant 2 is more suitable.
+
+
+### Variant 2: Screen Mixin
+
+The second option is based on the [Screen Mixin](https://doc.cuba-platform.com/manual-latest/screen_mixins.html) functionality
+which allows to extract particular common login into an Interface.
+
+In this case, the following Interface can be created in the web module `WithDeactivatableAttributes`:
+
+```java
+
+/**
+ * Screen Mixin that allows to define a list of entity attributes, that should be
+ * deactivated once an entity was created and is in edit mode
+ */
+public interface WithDeactivatableAttributes {
+
+
+    /**
+     * the list of Entity attributes that will be deactivated
+     */
+    List<Component.Editable> attributesToDeactivate();
+
+
+    @Subscribe
+    default void onInit(Screen.BeforeShowEvent event) {
+        EntityStates entityStates = Extensions.getBeanLocator(event.getSource()).get(EntityStates.class);
+        Entity editedEntity = ((StandardEditor) event.getSource()).getEditedEntity();
+
+        if (!entityStates.isNew(editedEntity)) {
+            attributesToDeactivate().forEach(
+                    editable -> editable.setEditable(false)
+            );
+        }
+    }
+
+}
 ```
 
-#### start application
-```
-./restart-server.sh
-```
+The interface has a method that needs to be implemented: `attributesToDeactivate` which should return the
+corresponding list of Component instances that should be deactivated.
 
+A usage of that interface can be found in the `VisitEdit` screen:
+
+```java
+public class VisitEdit extends StandardEditor<Visit> implements WithDeactivatableAttributes {
+
+    @Inject
+    protected LookupPickerField<Pet> petField;
+    @Inject
+    protected DateField<Date> visitDateField;
+
+    @Override
+    public List<Component.Editable> attributesToDeactivate() {
+        return Arrays.asList(
+            petField, visitDateField
+        );
+    }
+}
+```
 

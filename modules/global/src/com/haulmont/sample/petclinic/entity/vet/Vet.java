@@ -1,17 +1,17 @@
 package com.haulmont.sample.petclinic.entity.vet;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import com.haulmont.cuba.core.entity.annotation.PublishEntityChangedEvents;
 import com.haulmont.sample.petclinic.entity.Person;
-import java.util.Set;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
 
+import javax.persistence.*;
+import java.util.Set;
+
+@PublishEntityChangedEvents
 @Table(name = "PETCLINIC_VET")
 @Entity(name = "petclinic_Vet")
 public class Vet extends Person {
     private static final long serialVersionUID = 8571203926820669424L;
+
 
     @JoinTable(name = "PETCLINIC_VET_SPECIALTY_LINK",
         joinColumns = @JoinColumn(name = "VET_ID"),
